@@ -1,0 +1,52 @@
+<html>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/threejs/r76/three.min.js"></script>
+<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+<div id="result"></div>
+<div id="plot"></div>
+<script>
+$.get( "http://m.mlb.com/lookup/json/named.psc_leader_hit_hardest.bam?season=2016&", function( data ) {
+  console.log(data)
+  hits = data.psc_leader_hit_hardest.queryResults.row
+  hits.forEach(function (hit) {
+    hit_tag =  $("<p>" + hit.batter + "</p>");
+    $( "#result" ).append(hit_tag);
+    hit_tag.click({hit: hit},display);
+  });
+});
+function display(hit) {
+  dist = hit.data.hit.distance;
+  height = hit.data.hit.height;
+  angle = hit.data.hit.launch_angle * 2 * Math.PI/ 360
+  speed = 1.47 * hit.data.hit.launch_speed;
+
+  x_list = [];
+  y_list = [];
+
+  x0 = {x: 0, y: 3.5}
+  v0 = {x: speed * Math.cos(angle), y: speed * Math.sin(angle)}
+  g = 32.15
+  k = 0.4
+
+  dt = 0.01
+  t = 0
+
+  x = 0
+  y = 1
+
+  while (y > 0) {
+    x = x0.x + (v0.x / k) * (1 - Math.exp(- k * t))
+    y = (g / (k * k)) * (1 - k * t - Math.exp(- k * t)) + x0.y + (v0.y / k) * (1 - Math.exp(- k * t))
+
+    x_list.push(x)
+    y_list.push(y)
+    t += dt
+  }
+  console.log(x_list)
+  console.log(dist)
+  console.log(height)
+  Plotly.newPlot('plot', [{x: x_list, y: y_list, type: 'scatter'}]);
+}
+
+</script>
+</html>
