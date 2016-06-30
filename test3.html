@@ -1,0 +1,76 @@
+<html>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/threejs/r76/three.min.js"></script>
+<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+<link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+<link rel="stylesheet" href="https://code.getmdl.io/1.1.3/material.indigo-pink.min.css">
+<script defer src="https://code.getmdl.io/1.1.3/material.min.js"></script>
+
+
+<div class="mdl-layout mdl-js-layout mdl-layout--fixed-drawer">
+  <div class="mdl-layout__drawer">
+    <span class="mdl-layout-title">Hardest Hits</span>
+    <nav class="mdl-navigation">
+    </nav>
+  </div>
+  <main class="mdl-layout__content">
+    <div class="page-content" id="plot"></div>
+  </main>
+</div>
+
+<script>
+$.get( "http://m.mlb.com/lookup/json/named.psc_leader_hit_hardest.bam?season=2016&", function( data ) {
+  console.log(data)
+  hits = data.psc_leader_hit_hardest.queryResults.row
+  hits.forEach(function (hit) {
+    hit_tag =  $("<a class='mdl-navigation__link'>" + hit.batter + "</a>");
+    $( "nav.mdl-navigation" ).append(hit_tag);
+    hit_tag.click({hit: hit},display);
+  });
+});
+function display(hit) {
+  dist = hit.data.hit.distance;
+  height = hit.data.hit.height;
+  angle = hit.data.hit.launch_angle * 2 * Math.PI/ 360
+  speed = 1.47 * hit.data.hit.launch_speed;
+
+  x_list = [];
+  y_list = [];
+
+  x = {x: 0, y: 3}
+  v = {x: speed * Math.cos(angle), y: speed * Math.sin(angle)}
+  g = 32.15
+  x_list.push(x.x)
+  y_list.push(x.y)
+
+  dt = 0.01
+
+  y_max = 0
+  while (x.y > 0) {
+    x.x = x.x + v.x * dt;
+    x.y = x.y + v.y * dt;
+    v.y = v.y - g * dt;
+
+    if (x.y > y_max) {
+      y_max = x.y
+    }
+
+    x_list.push(x.x)
+    y_list.push(x.y)
+  }
+
+  console.log(x_list)
+  x_list = x_list.map(function (x) {
+    return x * dist / x_list[x_list.length - 1]
+  });
+
+  y_list = y_list.map(function (y) {
+    return y * height / y_max
+  });
+
+  console.log(dist)
+  Plotly.newPlot('plot', [{x: x_list, y: y_list, type: 'scatter'}]);
+}
+
+</script>
+</html>
