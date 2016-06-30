@@ -40,6 +40,7 @@ function display(hit) {
   x = {x: 0, y: 3}
   v = {x: speed * Math.cos(angle), y: speed * Math.sin(angle)}
   g = 32.15
+  b = 0.5
   x_list.push(x.x)
   y_list.push(x.y)
 
@@ -50,6 +51,7 @@ function display(hit) {
     x.x = x.x + v.x * dt;
     x.y = x.y + v.y * dt;
     v.y = v.y - g * dt;
+    v.x = v.x * (1 - b * dt);
 
     if (x.y > y_max) {
       y_max = x.y
@@ -69,7 +71,7 @@ function display(hit) {
   });
 
   console.log(dist)
-  Plotly.newPlot('plot', [{x: x_list, y: y_list, type: 'scatter'}]);
+  Plotly.newPlot('plot', [{x: x_list, y: y_list, type: 'scatter'}], {xaxis: {range: [0, 400]},yaxis: {range: [0, 50]}});
 }
 
 </script>
